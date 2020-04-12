@@ -9,7 +9,7 @@ var zlib = require('zlib');
 const superagent = require('superagent');
 const { BlobServiceClient } = require('@azure/storage-blob');
 const uuidv1 = require('uuid/v1');
-const AZURE_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=cbspstorageaccount;AccountKey=wBGXyMM/shqzc2se6r7zECrt2sU8uhAZ0Ap/+t/38dYjI1mN0K/uXKVbORs2TNbZ/UhPSoiDxSXUJu3xuWCofg==;EndpointSuffix=core.windows.net";
+const AZURE_STORAGE_CONNECTION_STRING = "INSERTSTORAGEKEY";
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './Uploads/');
