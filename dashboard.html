@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<script>
+    // window.onload
+    window.onload = function () {
+        $.get("./getVideos", function (data, status) {
+            var jsonData = JSON.parse(data);
+
+            console.log(jsonData);
+            console.log("Parsing recieved videos");
+            for (var i = 0; i < jsonData['length']; i++) {
+                var vidName = jsonData[i]['vidName'];
+                console.log("Appending " + vidName);
+                $("#video").append(new Option(vidName, vidName));
+                $("#videoDelete").append(new Option(vidName, vidName));
+
+            }
+
+        });
+    };
+</script>
+
+
+<head>
+    <!--the HTML document: -->
+    <meta charset="UTF-8">
+    <!--document dimentions and scaling-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--import font styles-->
+    <!--importing style sheets + an image-->
+
+    <!--title of this page-->
+    <title>Urban Planning Helper</title>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logobox">
+            <h1>Cloud Based Urban Planning</h1>
+            <!--adding a logo in the header-->
+            <img src="urban-planning-logo.jpg" alt="logo" align="right" class="logo" height="150px" width="300px">
+        </div>
+
+    </header>
+
+    <form method="POST" action="/fileupload" enctype="multipart/form-data" id="uploadForm">
+        <input type="file" name="file" id="file" />
+        <input type="submit" value="Upload">
+    </form>
+    <br>
+    <br>
+
+    <form method="POST" action="/filedownload" id="videoForm">
+        <label>Choose a surveilance video to download:</label>
+        <select id="video" name="video">
+        </select>
+        <input type="submit">
+    </form>
+
+    <br>
+    <br>
+<!--
+    FEATURE STILL IN PROGRESS
+    <form method="POST" action="/filedelete" id="videodeleteForm">
+        <label>Choose a surveilance video to delete:</label>
+        <select id="videoDelete" name="videoDelete">
+        </select>
+        <input type="submit">
+    </form>    
+-->
+</body>
+
+</html>

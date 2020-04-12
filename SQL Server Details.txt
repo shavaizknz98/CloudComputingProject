@@ -1,0 +1,5 @@
+SQL Database Information
+Database name: sql_database
+Server name: cbspdb.database.windows.net
+Server admin login: cbspdb
+Password: Hello12344321

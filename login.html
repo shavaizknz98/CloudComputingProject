@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--language: english-->
+
+<head>
+    <!--the HTML document: -->
+    <meta charset="UTF-8">
+    <!--document dimentions and scaling-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--import font styles-->
+    <!--importing style sheets + an image-->
+
+    <!--title of this page-->
+    <title>Urban Planning Helper</title>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logobox">
+            <!--adding a logo in the header-->
+            <h1>Cloud Based Urban Planning</h1>
+            <!--adding a logo in the header-->
+            <img src="urban-planning-logo.jpg" alt="logo" align="right" class="logo" height="150px" width="300px">
+        </div>
+
+    </header>
+
+
+    <form action="/login" method="post">
+        <!--username and passwords inputs -- fields are required-->
+        <div class="container">
+          <label for="uname"><b>Username</b></label>
+          <input type="text" placeholder="Enter Username" name="uname" required>
+  
+          <label for="psw"><b>Password</b></label>
+          <input type="password" placeholder="Enter Password" name="psw" required>
+  
+        </div>
+        <!--buttons:login and cancel-->
+        <div class="container" style="background-color:#f1f1f1">
+          <button type="submit" name="submit" class="btn btnwhite btnanimated">Login</button>
+          <button type="button" name="cancel" class="btn btncancel btnanimated">Cancel</button>
+        </div>
+      </form>
+</body>
+
+</html>
