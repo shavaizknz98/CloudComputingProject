@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css">
 
 <script>
     // window.onload
@@ -12,14 +13,46 @@
             console.log("Parsing recieved videos");
             for (var i = 0; i < jsonData['length']; i++) {
                 var vidName = jsonData[i]['vidName'];
+                var vidID = jsonData[i]['vidID'];
                 console.log("Appending " + vidName);
                 $("#video").append(new Option(vidName, vidName));
-                $("#videoDelete").append(new Option(vidName, vidName));
+                //$("#videoDelete").append(new Option(vidName, vidName));
+                var table = document.getElementById("analysisTable");
+                var row = table.insertRow(1);
+                var vidNameCell = row.insertCell(0);
+                var vidIDCell = row.insertCell(1);
+                var retrieveCell = row.insertCell(2);
+                vidNameCell.innerHTML = vidName;
+                vidIDCell.innerHTML = vidID;
+                retrieveCell.innerHTML = retrieveCell.innerHTML + "<button type='button' onclick=\"provideAnalysis(" + vidID + ")\">Retrieve Analysis</button><br>";
 
             }
 
         });
     };
+
+    function provideAnalysis(vidID) {
+        $.ajax({
+            type: 'GET',
+            url: '/getVideoAnalysis',
+            data: { vidID: vidID },
+            success: function (resp) {
+                var respString = JSON.stringify(resp);
+                console.log(respString);
+                if (respString.includes("[]")) {
+                    alert("This footage is still being analyzed");
+                } else {
+                    response = JSON.parse(resp)[0];
+                    console.log(response["FPS"]);
+                    //"[{\"numOfPeopleX\":0,\"numOfPeopleeY\":0,\"analysisTime\":0,\"FPS\":0}]"
+
+                    alert("Analyzed data is: \n" + "Number of people walking North or South " + response["numOfPeopleX"] + "\nNumber of people walking East or West " + response["numOfPeopleeY"] + "\nAnalysis Time " + response["analysisTime"] + "\nFPS " + response["FPS"]);
+                }
+
+            }
+        });
+    }
+
 </script>
 
 
@@ -40,8 +73,6 @@
     <header class="header">
         <div class="logobox">
             <h1>Cloud Based Urban Planning</h1>
-            <!--adding a logo in the header-->
-            <img src="urban-planning-logo.jpg" alt="logo" align="right" class="logo" height="150px" width="300px">
         </div>
 
     </header>
@@ -62,7 +93,7 @@
 
     <br>
     <br>
-<!--
+    <!--
     FEATURE STILL IN PROGRESS
     <form method="POST" action="/filedelete" id="videodeleteForm">
         <label>Choose a surveilance video to delete:</label>
@@ -71,6 +102,14 @@
         <input type="submit">
     </form>    
 -->
+
+    <table style="width:100%" id="analysisTable" class="minimalistBlack">
+        <tr>
+            <th>Video Name</th>
+            <th>Video ID</th>
+            <th>Retrieve Analysis</th>
+        </tr>
+    </table>
 </body>
 
 </html>

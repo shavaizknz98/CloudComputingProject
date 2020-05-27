@@ -4,12 +4,13 @@ var fs = require('fs');
 var cookieParser = require('cookie-parser');
 const multer = require('multer');
 const path = require('path');
-const databaseServer = 'https://cbspdatabaseserver.azurewebsites.net/webapi'
+//const databaseServer= 'https://cbspdatabaseserver.azurewebsites.net/webapi'
+const databaseServer= 'http://localhost:8080/CBSP_Database/webapi'
 var zlib = require('zlib');
 const superagent = require('superagent');
 const { BlobServiceClient } = require('@azure/storage-blob');
 const uuidv1 = require('uuid/v1');
-const AZURE_STORAGE_CONNECTION_STRING = "INSERTSTORAGEKEY";
+const AZURE_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=cbspstorageaccount;AccountKey=UArSod1/R468oT72TgzqUAWOgFXKQ0Cj0wKvhv3i7i/aZNR9vS8fDj8r0L+nDDc+IGC7rtmBhMsd0n/ljTE0uA==;EndpointSuffix=core.windows.net";
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './Uploads/');
@@ -37,7 +38,7 @@ app.get('/', function (req, res) {
 });
 
 function logUserIn(email, pass, reqResponse, myReq) {
-    superagent.get( databaseServer + '/Users/' + email + "/" + pass)
+    superagent.get(databaseServer + '/Users/' + email + "/" + pass)
         .then(res => {
             console.log(res.body)
             if (res.body == "") {
@@ -64,7 +65,7 @@ function logUserIn(email, pass, reqResponse, myReq) {
 
 function signUserUp(email, name, pass, reqResponse, myReq) {
     superagent
-        .post( databaseServer + '/Users/')
+        .post(databaseServer + '/Users/')
         .send({ email: email, name: name, pass: pass })
         .set('Accept', 'application/json')
         .then(res => {
@@ -81,9 +82,29 @@ function signUserUp(email, name, pass, reqResponse, myReq) {
 }
 
 function addVideoFromUser(email, vidName, vidPass, vidID, cDate, vidPath, analyzed) {
+
+    var date_ob = new Date();
+    let date = ("0" + date_ob.getDate()).slice(-2);
+
+    // current month
+    let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+
+    // current year
+    let year = date_ob.getFullYear();
+
+    // current hours
+    let hours = date_ob.getHours();
+
+    // current minutes
+    let minutes = date_ob.getMinutes();
+
+    // current seconds
+    let seconds = date_ob.getSeconds();
+
+    createdDate = year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds;
     superagent
-        .post( databaseServer + '/Videos/')
-        .send({ email: email, vidName: vidName, vidPass: "", vidID: 0, cDate: "", vidPath: vidPath, analyzed: false })
+        .post(databaseServer + '/Videos/')
+        .send({ email: email, vidName: vidName, vidPass: "", vidID: 0, cDate: createdDate, vidPath: vidPath, analyzed: false })
         .set('Accept', 'application/json')
         .then(res => {
             console.log(res.body)
@@ -97,31 +118,42 @@ function addVideoFromUser(email, vidName, vidPass, vidID, cDate, vidPath, analyz
         });
 }
 
-function getVideoFromUser(email, reqResponse){
+function getVideoFromUser(email, reqResponse) {
     superagent
-    .get( databaseServer + '/Videos/' + email)
+        .get(databaseServer + '/Videos/' + email)
+        .set('Accept', 'application/json')
+        .then(res => {
+            console.log("Sending video list for " + email);
+            return reqResponse.send(JSON.stringify(res.body));
+        });
+}
+
+
+function getVideoAnalysisFromUser(vidID, reqResponse){
+    superagent
+    .get(databaseServer + '/Analysis/' + vidID)
     .set('Accept', 'application/json')
     .then(res => {
-        console.log("Sending video list for "+ email);
+        console.log("Sending video analysis for video" + vidID);
         return reqResponse.send(JSON.stringify(res.body));
     });
 }
 
-function getVidPathFromUser(email, name ,reqResponse){
+function getVidPathFromUser(email, name, reqResponse) {
     superagent
-    .get( databaseServer + '/Videos/' + email)
-    .set('Accept', 'application/json')
-    .then(res => {
-        
-        var jsonData = JSON.parse(JSON.stringify(res.body));
-        for( var index in res.body) {
-            var vidName = jsonData[index]['vidName'];
-            if(vidName == name)
-            return reqResponse.redirect(jsonData[index]['vidPath']);
+        .get(databaseServer + '/Videos/' + email)
+        .set('Accept', 'application/json')
+        .then(res => {
 
-        }
-        
-    });
+            var jsonData = JSON.parse(JSON.stringify(res.body));
+            for (var index in res.body) {
+                var vidName = jsonData[index]['vidName'];
+                if (vidName == name)
+                    return reqResponse.redirect(jsonData[index]['vidPath']);
+
+            }
+
+        });
 }
 
 function deleteOriginalFile(filename, myReq) {
@@ -235,30 +267,37 @@ app.post('/fileupload', upload.single('file'), (req, res, next) => {
     }
 });
 
-app.post('/filedownload', urlencodedParser , (req, res, next) => {
+app.post('/filedownload', urlencodedParser, (req, res, next) => {
     console.log("Sending file to client");
     console.log(req.body.video);
     getVidPathFromUser(req.cookies.email, req.body.video, res);
-    
+
 });
 
-app.post('/filedelete', urlencodedParser , (req, res, next) => {
+app.post('/filedelete', urlencodedParser, (req, res, next) => {
     console.log("Deleting file from client");
     console.log(req.body.videoDelete);
     getVidPathFromUser(req.cookies.email, req.body.video, res);
-    
+
 });
 
-app.get('/getVideos', function (req, res) { 
+app.get('/getVideos', function (req, res) {
     console.log("getting videos for " + req.cookies.email)
     getVideoFromUser(req.cookies.email, res);
 });
+
+app.get('/getVideoAnalysis', function (req,res){
+    console.log(req.query);
+    console.log("Getting analysis info for video " + req.query.vidID);
+    getVideoAnalysisFromUser(req.query.vidID, res);
+
+})
 
 
 app.listen(app.get('port'), function () {
     console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.');
     console.log(AZURE_STORAGE_CONNECTION_STRING);
-    
+
 
 });
 
